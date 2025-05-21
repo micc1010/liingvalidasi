@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Validasi Rekening - Liing</title>
+  <link rel="icon" href="/logo/logo.webp" />
+</head>
+<body>
+  <h1>Cek Validasi Rekening</h1>
+  <div id="login-check"></div>
+
+  <form id="cekForm" style="display:none;">
+    <input type="text" id="rekening" placeholder="Nomor Rekening" required />
+    <input type="text" id="bank" placeholder="Kode Bank (misal: bca)" required />
+    <button type="submit">Cek</button>
+  </form>
+
+  <pre id="result"></pre>
+
+  <script>
+    const user = localStorage.getItem("user");
+    if (!user) {
+      document.getElementById('login-check').innerHTML = '<p>Silakan <a href="login.html">login</a> terlebih dahulu.</p>';
+    } else {
+      document.getElementById('login-check').innerHTML = `<p>Login sebagai <b>${user}</b> | <a href="#" onclick="logout()">Logout</a></p>`;
+      document.getElementById('cekForm').style.display = 'block';
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      location.reload();
+    }
+
+    document.getElementById('cekForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const rekening = document.getElementById('rekening').value;
+      const bank = document.getElementById('bank').value;
+      const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    };
+  </script>
+</body>
+</html>

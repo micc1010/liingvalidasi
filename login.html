@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Liing</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <form onsubmit="login(event)">
+    <input type="text" id="username" placeholder="Nama pengguna" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    function login(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      localStorage.setItem("user", username);
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
