@@ -15,10 +15,11 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(`https://apidev.biz.id/cekrekening?rekening=${rekening}&bank=${bank}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`
+     headers: {
+      Authorization: `Bearer ${apiKey}`
       }
     });
+
 
     if (!response.ok) {
       const text = await response.text();
