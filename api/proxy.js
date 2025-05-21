@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key belum diatur di environment variables' });
     }
 
-    const response = await fetch(`https://api.apidev.biz.id/cekrekening?rekening=${rekening}&bank=${bank}`, {
+    const response = await fetch(`https://apidev.biz.id/cekrekening?rekening=${rekening}&bank=${bank}`, {
       headers: {
         Authorization: `Bearer ${apiKey}`
       }
