@@ -5,31 +5,26 @@ export default async function handler(req, res) {
     const { rekening, bank } = req.query;
 
     if (!rekening || !bank) {
-      return res.status(400).json({ error: 'rekening dan bank wajib diisi' });
+      return res.status(400).json({ error: 'Parameter rekening dan bank wajib diisi' });
     }
 
     const apiKey = process.env.APIKEY;
-
     if (!apiKey) {
-      return res.status(500).json({ error: 'API key belum diatur di environment variables' });
+      return res.status(500).json({ error: 'API key belum diset di environment variables' });
     }
 
     const response = await fetch('https://apidev.biz.id/api/checker', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-       'x-api-key': apiKey // GANTI dari Authorization ke x-api-key
+        'x-api-key': apiKey
       },
-     body: JSON.stringify({
-        rekening,
-       bank
-     })
+      body: JSON.stringify({ rekening, bank })
     });
-
 
     const text = await response.text();
 
-    // Coba parse JSON, jika tidak valid JSON maka kirim error mentah
+    // Coba parse JSON response, jika gagal kirim raw response error
     try {
       const data = JSON.parse(text);
       res.status(response.status).json(data);
@@ -38,7 +33,8 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error('Error in proxy:', error);
+    console.error('Error in proxy handler:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
