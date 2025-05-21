@@ -1,1 +1,0 @@
-# liingvalidasi
