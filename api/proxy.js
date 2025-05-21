@@ -12,11 +12,21 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key belum diset di environment variables' });
     }
 
-    // Sesuaikan parameter sesuai dokumentasi
-    // Pastikan kamu punya mapping bank ke kode_bank yang benar
-    const kode_bank = bank.toLowerCase(); // contoh sederhana, kamu bisa buat mapping lebih detail
+    const bankCodes = {
+      bca: '014',
+      mandiri: '008',
+      bri: '002',
+      bni: '009',
+      cimb: '022',
+      // tambahkan kode bank lain di sini
+    };
 
-    const url = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${encodeURIComponent(kode_bank)}&nomor_rekening=${encodeURIComponent(rekening)}&apikey=${encodeURIComponent(apiKey)}`;
+    const kode_bank = bankCodes[bank.toLowerCase()];
+    if (!kode_bank) {
+      return res.status(400).json({ error: 'Bank tidak dikenal. Pastikan nama bank benar dan sudah didaftarkan di mapping kode bank.' });
+    }
+
+    const url = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${encodeURIComponent(rekening)}&apikey=${encodeURIComponent(apiKey)}`;
 
     const response = await fetch(url);
     const data = await response.json();
