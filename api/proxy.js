@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key belum diset di environment variables' });
     }
 
-    const response = await fetch('https://apidev.biz.id/api/checker', {
+    const response = await fetch('https://apidev.biz.id//api/checker', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
