@@ -14,20 +14,27 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key belum diatur di environment variables' });
     }
 
-    const response = await fetch(`https://apidev.biz.id/cekrekening?rekening=${rekening}&bank=${bank}`, {
-     headers: {
-      Authorization: `Bearer ${apiKey}`
-      }
+    const response = await fetch('https://apidev.biz.id/api/checker', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        rekening,
+        bank
+      })
     });
 
+    const text = await response.text();
 
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).json({ error: `API error: ${text}` });
+    // Coba parse JSON, jika tidak valid JSON maka kirim error mentah
+    try {
+      const data = JSON.parse(text);
+      res.status(response.status).json(data);
+    } catch {
+      res.status(response.status).json({ error: `API error: ${text}` });
     }
-
-    const data = await response.json();
-    res.status(200).json(data);
 
   } catch (error) {
     console.error('Error in proxy:', error);
