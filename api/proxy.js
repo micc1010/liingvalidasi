@@ -18,13 +18,14 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+       'x-api-key': apiKey // GANTI dari Authorization ke x-api-key
       },
-      body: JSON.stringify({
+     body: JSON.stringify({
         rekening,
-        bank
-      })
+       bank
+     })
     });
+
 
     const text = await response.text();
 
