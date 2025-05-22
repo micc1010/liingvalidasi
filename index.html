@@ -63,12 +63,17 @@
       font-size: 0.9rem;
       color: #777;
     }
+    .logout-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #dc3545;
+    }
   </style>
 </head>
 <body>
   <!-- Script pengecekan login -->
   <script>
-    // Cek status login ke server (karena cookie HttpOnly tidak bisa dicek client-side)
     fetch("/api/check-auth")
       .then((res) => {
         if (!res.ok) {
@@ -79,20 +84,19 @@
         window.location.href = "/login.html";
       });
   </script>
+
   <h1>Heaven Validasi</h1>
+  <button onclick="logout()" class="logout-button">Logout</button>
+
   <div class="form-container">
     <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
     <select id="bank">
       <option value="">Pilih Bank atau E-Wallet</option>
-
-      <!-- E-Wallet -->
       <option value="DANA">DANA</option>
       <option value="GOPAY">GOPAY</option>
       <option value="LINKAJA">LINKAJA</option>
       <option value="OVO">OVO</option>
       <option value="SHOPEEPAY">SHOPEEPAY</option>
-
-      <!-- Bank (urut abjad) -->
       <option value="116">BANK ACEH SYAHRIAH</option>
       <option value="014">BCA</option>
       <option value="536">BANK BCA SYARIAH</option>
@@ -122,6 +126,7 @@
     </select>
     <button onclick="cekRekening()">Cek Sekarang</button>
   </div>
+
   <div class="result" id="result"></div>
 
   <footer>© 2025 Heaven Validasi</footer>
@@ -140,15 +145,12 @@
       resultDiv.textContent = "Sedang memeriksa...";
 
       try {
-        // Tentukan action sesuai apakah bank adalah e-wallet atau bank
-        const ewallets = ["DANA","OVO","GOPAY","LINKAJA","SHOPEEPAY"];
+        const ewallets = ["DANA", "OVO", "GOPAY", "LINKAJA", "SHOPEEPAY"];
         let apiUrl;
 
         if (ewallets.includes(bank)) {
-          // Untuk e-wallet, action getEwallet (misal), jika API butuh beda action, sesuaikan ya
           apiUrl = `/api/proxy?action=getEwallet&kode_bank=${bank}&nomor_rekening=${rekening}`;
         } else {
-          // Untuk bank, action getAccount
           apiUrl = `/api/proxy?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}`;
         }
 
@@ -159,7 +161,7 @@
           resultDiv.innerHTML = `
             <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik || data.data.nama || "Tidak tersedia"}<br>
             <strong>Bank:</strong> ${data.data.nama_bank || data.data.bank || "Tidak tersedia"}<br>
-            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || data.data.nomor_rekening || rekening}
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || rekening}
           `;
         } else {
           resultDiv.textContent = data.message || "Data tidak ditemukan.";
@@ -168,6 +170,11 @@
         console.error(err);
         resultDiv.textContent = "Terjadi kesalahan saat memproses.";
       }
+    }
+
+    async function logout() {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "/login.html";
     }
   </script>
 </body>
