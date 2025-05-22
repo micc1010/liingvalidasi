@@ -1,4 +1,4 @@
-import { getSessions, isSessionValid } from "./sessionStore";
+import { isSessionValid } from "./sessionStore.js";
 
 export default function handler(req, res) {
   const cookies = req.headers.cookie || "";
@@ -9,10 +9,14 @@ export default function handler(req, res) {
 
   if (!token) return res.status(401).end();
 
-  const sessions = getSessions();
-  const valid = Object.entries(sessions).some(
-    ([username, sessionToken]) => token === sessionToken
-  );
+  // Cek token terhadap semua session yang ada
+  let valid = false;
+  for (const [username, sessionToken] of global.sessions.entries()) {
+    if (token === sessionToken) {
+      valid = true;
+      break;
+    }
+  }
 
   if (valid) {
     return res.status(200).json({ success: true });

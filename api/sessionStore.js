@@ -1,4 +1,7 @@
-const sessions = new Map();
+const sessions = global.sessions || new Map();
+if (!global.sessions) {
+  global.sessions = sessions;
+}
 
 export function createSession(username, sessionId) {
   sessions.set(username, sessionId);
