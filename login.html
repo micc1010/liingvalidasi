@@ -6,97 +6,82 @@
   <title>Login - Heaven Validasi</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background-color: #000;
-      color: white;
+      background: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
       display: flex;
-      flex-direction: column;
+      height: 100vh;
       align-items: center;
       justify-content: center;
-      height: 100vh;
     }
-    h2 {
-      margin-bottom: 20px;
-      font-size: 2rem;
-    }
-    .login-container {
-      background-color: #111;
+    .login-box {
+      background: #111;
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 90%;
-      max-width: 400px;
-    }
-    input, button {
-      font-size: 1.1rem;
-      padding: 12px;
-      border: none;
       border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.1);
+      width: 300px;
     }
     input {
-      background-color: #222;
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #222;
+      border: none;
       color: white;
+      border-radius: 5px;
     }
     button {
-      background-color: #28a745;
+      width: 100%;
+      padding: 10px;
+      background: #007BFF;
+      border: none;
       color: white;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s;
     }
-    button:hover {
-      background-color: #218838;
-    }
-    .message {
-      font-size: 0.95rem;
-      text-align: center;
+    #message {
+      margin-top: 10px;
+      color: #f44336;
+      min-height: 1.2em;
     }
   </style>
 </head>
 <body>
-  <h2>Login ke Heaven Validasi</h2>
-
-  <div class="login-container">
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" autocomplete="username" />
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
     <button onclick="login()">Login</button>
-    <div class="message" id="message"></div>
+    <div id="message"></div>
   </div>
 
   <script>
     async function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-      const messageDiv = document.getElementById("message");
 
       if (!username || !password) {
-        messageDiv.textContent = "Mohon isi username dan password.";
+        document.getElementById("message").innerText = "Username dan password wajib diisi";
         return;
       }
 
-      messageDiv.textContent = "Sedang masuk...";
-
       try {
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
         });
 
         const data = await res.json();
 
         if (data.success) {
-          window.location.href = "/";
+          window.location.href = "/index.html";
         } else {
-          messageDiv.textContent = data.message || "Gagal login.";
+          document.getElementById("message").innerText = data.message || "Login gagal";
         }
-      } catch (error) {
-        console.error(error);
-        messageDiv.textContent = "Terjadi kesalahan saat login.";
+      } catch (err) {
+        document.getElementById("message").innerText = "Terjadi kesalahan jaringan";
+        console.error(err);
       }
     }
   </script>
