@@ -66,6 +66,12 @@
   </style>
 </head>
 <body>
+  <!-- Script pengecekan login -->
+  <script>
+    if (!document.cookie.includes("token=authenticated")) {
+      window.location.href = "/login.html";
+    }
+  </script>
   <h1>Heaven Validasi</h1>
   <div class="form-container">
     <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
