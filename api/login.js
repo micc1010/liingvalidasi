@@ -1,18 +1,29 @@
+import { setSession } from "./sessionStore";
+import { nanoid } from "nanoid";
+
+const users = [
+  { username: process.env.LOGIN_USERNAME, password: process.env.LOGIN_PASSWORD },
+  { username: "michael", password: "Michael188" },
+  { username: "dimasyorke", password: "asd123123" },
+];
+
 export default function handler(req, res) {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const { username, password } = req.body;
 
-    const USERNAME = process.env.LOGIN_USERNAME;
-    const PASSWORD = process.env.LOGIN_PASSWORD;
+    const user = users.find(u => u.username === username && u.password === password);
 
-    if (username === USERNAME && password === PASSWORD) {
-      res.setHeader('Set-Cookie', `token=authenticated; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure`);
+    if (user) {
+      const sessionToken = nanoid();
+      setSession(username, sessionToken);
+
+      res.setHeader("Set-Cookie", `token=${sessionToken}; Path=/; HttpOnly; Max-Age=3600`);
       return res.status(200).json({ success: true });
     } else {
-      return res.status(401).json({ success: false, message: 'Username atau password salah' });
+      return res.status(401).json({ success: false, message: "Username atau password salah" });
     }
   } else {
-    res.setHeader('Allow', ['POST']);
+    res.setHeader("Allow", ["POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

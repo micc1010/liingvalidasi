@@ -1,11 +1,22 @@
-// /api/check-auth.js
+import { getSessions, isSessionValid } from "./sessionStore";
+
 export default function handler(req, res) {
   const cookies = req.headers.cookie || "";
-  const isAuthenticated = cookies.includes("token=authenticated");
+  const token = cookies
+    .split("; ")
+    .find(row => row.startsWith("token="))
+    ?.split("=")[1];
 
-  if (isAuthenticated) {
-    res.status(200).json({ authenticated: true });
+  if (!token) return res.status(401).end();
+
+  const sessions = getSessions();
+  const valid = Object.entries(sessions).some(
+    ([username, sessionToken]) => token === sessionToken
+  );
+
+  if (valid) {
+    return res.status(200).json({ success: true });
   } else {
-    res.status(401).json({ authenticated: false });
+    return res.status(401).json({ success: false });
   }
 }
