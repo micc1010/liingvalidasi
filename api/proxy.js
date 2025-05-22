@@ -1,4 +1,11 @@
 export default async function handler(req, res) {
+  // Cek cookie token
+  const cookies = req.headers.cookie || "";
+  if (!cookies.includes("token=authenticated")) {
+    return res.status(403).json({ error: "Akses ditolak. Silakan login." });
+  }
+
+  // Proses proxy seperti biasa
   try {
     const { action, kode_bank, nomor_rekening } = req.query;
     const API_KEY = process.env.APIKEY;
@@ -7,7 +14,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Parameter action wajib diisi." });
     }
 
-    // Cek parameter wajib
     if (!kode_bank) {
       return res.status(400).json({ error: "Parameter kode_bank wajib diisi." });
     }
@@ -18,13 +24,8 @@ export default async function handler(req, res) {
 
     let apiUrl = "";
 
-    if (action === "getAccount") {
-      // Untuk cek rekening bank
-      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
-    } else if (action === "getEwallet") {
-      // Jika API untuk ewallet beda endpoint, ganti di sini, contoh di bawah
-      // Misal ewallet juga pakai getAccount tapi hanya beda kode_bank-nya
-      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
+    if (action === "getAccount" || action === "getEwallet") {
+      apiUrl = `https://apidev.biz.id/api/checker?action=${action}&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
     } else {
       return res.status(400).json({ error: "Action tidak ditemukan" });
     }
