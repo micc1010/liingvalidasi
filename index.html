@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Heaven Validasi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heaven Validasi - Cek Rekening & E-Wallet</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background-color: #000;
       color: #fff;
       font-family: Arial, sans-serif;
@@ -16,131 +14,177 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 20px;
     }
-
     h1 {
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       font-size: 2.5rem;
+      text-align: center;
     }
-
     .form-container {
+      background: #111;
+      padding: 30px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1);
       display: flex;
       flex-direction: column;
       gap: 20px;
-      width: 90%;
-      max-width: 500px;
-      background-color: #111;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     }
-
-    input,
-    select,
-    button {
+    select, input, button {
       font-size: 1.2rem;
       padding: 15px;
-      border: none;
       border-radius: 10px;
+      border: none;
+      outline: none;
     }
-
-    input,
-    select {
+    select, input {
       background-color: #222;
-      color: white;
+      color: #fff;
     }
-
     button {
       background-color: #007BFF;
-      color: white;
+      color: #fff;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background-color 0.3s;
+      font-weight: bold;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
     .result {
       margin-top: 30px;
       font-size: 1.1rem;
       word-break: break-word;
       text-align: center;
+      min-height: 80px;
     }
-
     footer {
-      position: absolute;
-      bottom: 20px;
+      margin-top: 50px;
       font-size: 0.9rem;
       color: #777;
+      text-align: center;
+      width: 100%;
     }
   </style>
 </head>
-
 <body>
   <h1>Heaven Validasi</h1>
   <div class="form-container">
-    <input type="text" id="rekening" placeholder="Nomor Rekening atau Nomor HP E-Wallet" />
-    <select id="bank">
-      <option value="">Pilih Jenis (E-Wallet/Bank)</option>
-      <!-- E-Wallet -->
-      <option value="DANA">DANA</option>
-      <option value="OVO">OVO</option>
-      <option value="GOPAY">GoPay</option>
-      <option value="LINKAJA">LinkAja</option>
-      <option value="SAKUKU">Sakuku</option>
-      <option disabled>──────────</option>
-      <!-- Bank -->
-      <option value="014">BCA</option>
-      <option value="008">Mandiri</option>
-      <option value="009">BNI</option>
-      <option value="002">BRI</option>
+    <label for="ewallet">Pilih E-Wallet</label>
+    <select id="ewallet" onchange="toggleBankDropdown()">
+      <option value="">-- Pilih E-Wallet --</option>
     </select>
-    <button onclick="cekRekening()">Cek Sekarang</button>
+
+    <label for="bank">Pilih Bank</label>
+    <select id="bank" onchange="toggleEwalletDropdown()">
+      <option value="">-- Pilih Bank --</option>
+    </select>
+
+    <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
+
+    <button id="cekButton">Cek Sekarang</button>
+
+    <div class="result" id="result"></div>
   </div>
-  <div class="result" id="result"></div>
 
   <footer>© 2025 Heaven Validasi</footer>
 
-  <script>
-    async function cekRekening() {
-      const rekening = document.getElementById("rekening").value.trim();
-      const bank = document.getElementById("bank").value;
-      const resultDiv = document.getElementById("result");
+<script>
+  const APIKEY = "YOUR_APIKEY_HERE"; // Ganti dengan APIKEY kamu
 
-      if (!rekening || !bank) {
-        resultDiv.textContent = "Silakan isi nomor dan pilih bank atau e-wallet.";
-        return;
+  async function loadBankList() {
+    try {
+      const res = await fetch(`https://apidev.biz.id/api/checker?action=getBankList&apikey=${APIKEY}`);
+      const data = await res.json();
+
+      if (data.success) {
+        const banks = data.data; // Array kode_bank dan nama_bank
+
+        const ewalletSelect = document.getElementById('ewallet');
+        const bankSelect = document.getElementById('bank');
+
+        banks.forEach(item => {
+          // Asumsi ewallet kode dimulai dengan 'E' atau berdasarkan daftar ini:
+          // Contoh daftar ewallet (sesuaikan dengan data sebenarnya):
+          const ewalletCodes = ["DANA", "OVO", "GOPAY", "LINKAJA", "SAKUKU"];
+
+          if (ewalletCodes.includes(item.kode_bank.toUpperCase()) || item.kode_bank.startsWith('E')) {
+            const opt = document.createElement('option');
+            opt.value = item.kode_bank;
+            opt.textContent = item.nama_bank;
+            ewalletSelect.appendChild(opt);
+          } else {
+            const opt = document.createElement('option');
+            opt.value = item.kode_bank;
+            opt.textContent = item.nama_bank;
+            bankSelect.appendChild(opt);
+          }
+        });
+      } else {
+        alert("Gagal mengambil daftar bank & e-wallet.");
       }
-
-      resultDiv.textContent = "Sedang memeriksa...";
-
-      try {
-        const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
-        const data = await res.json();
-
-        console.log(data); // Debug
-
-        if (data.success && data.data) {
-          const nama = data.data.nama || data.data.nama_pemilik || "Tidak tersedia";
-          const instansi = data.data.bank || data.data.nama_bank || bank;
-          const nomor = data.data.nomor_rekening || rekening;
-
-          resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${nama}<br>
-            <strong>Bank / E-Wallet:</strong> ${instansi}<br>
-            <strong>Nomor:</strong> ${nomor}
-          `;
-        } else {
-          resultDiv.textContent = data.message || "Data tidak ditemukan.";
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        resultDiv.textContent = "Terjadi kesalahan saat memproses.";
-      }
+    } catch (err) {
+      console.error("Error fetch bank list:", err);
+      alert("Terjadi kesalahan saat memuat daftar bank.");
     }
-  </script>
-</body>
+  }
 
+  function toggleBankDropdown() {
+    const ewalletVal = document.getElementById('ewallet').value;
+    if (ewalletVal) {
+      // Kalau pilih ewallet, reset bank dropdown
+      document.getElementById('bank').value = "";
+    }
+  }
+
+  function toggleEwalletDropdown() {
+    const bankVal = document.getElementById('bank').value;
+    if (bankVal) {
+      // Kalau pilih bank, reset ewallet dropdown
+      document.getElementById('ewallet').value = "";
+    }
+  }
+
+  async function cekRekening() {
+    const rekening = document.getElementById("rekening").value.trim();
+    // Pilih dari ewallet dulu kalau ada, kalau kosong baru pakai bank
+    let bank = document.getElementById("ewallet").value.trim() || document.getElementById("bank").value.trim();
+
+    const resultDiv = document.getElementById("result");
+
+    if (!rekening || !bank) {
+      resultDiv.textContent = "Mohon isi nomor dan pilih e-wallet atau bank.";
+      return;
+    }
+
+    resultDiv.textContent = "Sedang memeriksa...";
+
+    try {
+      const res = await fetch(`/api/proxy?rekening=${encodeURIComponent(rekening)}&bank=${encodeURIComponent(bank)}`);
+      const data = await res.json();
+
+      if (data.success) {
+        resultDiv.innerHTML = `
+          <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik || data.data.nama || "Tidak tersedia"}<br>
+          <strong>Bank:</strong> ${data.data.nama_bank || data.data.bank || "Tidak tersedia"}<br>
+          <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || rekening}
+        `;
+      } else {
+        resultDiv.textContent = data.message || "Data tidak ditemukan.";
+      }
+    } catch (err) {
+      console.error(err);
+      resultDiv.textContent = "Terjadi kesalahan saat memproses.";
+    }
+  }
+
+  document.getElementById("cekButton").addEventListener("click", cekRekening);
+
+  window.onload = loadBankList;
+</script>
+
+</body>
 </html>

@@ -1,44 +1,44 @@
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
   const { rekening, bank } = req.query;
+  const APIKEY = process.env.APIKEY; // Simpan APIKEY di Environment Variable Vercel
 
   if (!rekening || !bank) {
-    return res.status(400).json({ success: false, message: "Parameter rekening dan bank wajib diisi." });
+    return res.status(400).json({
+      success: false,
+      message: "Parameter rekening dan bank harus diisi",
+    });
   }
 
-  // Daftar e-wallet yang didukung
-  const ewallets = ["DANA", "OVO", "GOPAY", "LINKAJA", "SAKUKU"];
+  // Tentukan action API berdasarkan bank/ewallet
+  // Misal ewallet: kode_bank bukan angka tapi string (DANA, OVO, dll)
+  const isEwallet = isNaN(bank); // jika bank bukan angka maka ewallet
 
-  // Base URL API
-  const baseUrl = "https://apidev.biz.id/api/checker";
+  // action yang akan dipakai:
+  // Untuk bank: getAccount
+  // Untuk ewallet: getEwallet (asumsi sesuai dokumentasi, sesuaikan jika beda)
 
-  let url = "";
-  let apikey = process.env.APIKEY; // pastikan APIKEY sudah di set di environment variable
-
-  if (ewallets.includes(bank.toUpperCase())) {
-    // Jika bank termasuk e-wallet
-    // API e-wallet biasanya tidak butuh kode_bank, hanya nomor dan provider
-    // Sesuaikan parameter API-nya sesuai dokumentasi e-wallet, contoh:
-    url = `${baseUrl}?action=ewallet&provider=${bank.toLowerCase()}&nomor_hp=${rekening}&apikey=${apikey}`;
-  } else {
-    // Untuk bank biasa, wajib kode_bank dan nomor_rekening
-    url = `${baseUrl}?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}&apikey=${apikey}`;
+  let action = "getAccount";
+  if (isEwallet) {
+    action = "getEwallet";
   }
+
+  // Bangun URL endpoint
+  const url = new URL("https://apidev.biz.id/api/checker");
+  url.searchParams.append("action", action);
+  url.searchParams.append("apikey", APIKEY);
+  url.searchParams.append("kode_bank", bank);
+  url.searchParams.append("nomor_rekening", rekening);
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url.toString());
     const data = await response.json();
 
-    // Sukses, kirim data dari API langsung
-    if (data.success) {
-      res.status(200).json(data);
-    } else {
-      // Jika error dari API, teruskan pesan error
-      res.status(400).json({ success: false, message: data.message || "API error", error: data.error || {} });
-    }
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Fetch API error:", error);
-    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan pada server proxy",
+      error: error.message,
+    });
   }
 }
