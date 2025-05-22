@@ -68,9 +68,16 @@
 <body>
   <!-- Script pengecekan login -->
   <script>
-    if (!document.cookie.includes("token=authenticated")) {
-      window.location.href = "/login.html";
-    }
+    // Cek status login ke server (karena cookie HttpOnly tidak bisa dicek client-side)
+    fetch("/api/check-auth")
+      .then((res) => {
+        if (!res.ok) {
+          window.location.href = "/login.html";
+        }
+      })
+      .catch(() => {
+        window.location.href = "/login.html";
+      });
   </script>
   <h1>Heaven Validasi</h1>
   <div class="form-container">
