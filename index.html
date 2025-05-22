@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,12 +17,10 @@
       justify-content: center;
       height: 100vh;
     }
-
     h1 {
       margin-bottom: 20px;
       font-size: 2.5rem;
     }
-
     .form-container {
       display: flex;
       flex-direction: column;
@@ -35,40 +32,31 @@
       border-radius: 15px;
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     }
-
-    input,
-    select,
-    button {
+    input, select, button {
       font-size: 1.2rem;
       padding: 15px;
       border: none;
       border-radius: 10px;
     }
-
-    input,
-    select {
+    input, select {
       background-color: #222;
       color: white;
     }
-
     button {
       background-color: #007BFF;
       color: white;
       cursor: pointer;
       transition: background 0.3s;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
     .result {
       margin-top: 30px;
       font-size: 1.1rem;
       word-break: break-word;
       text-align: center;
     }
-
     footer {
       position: absolute;
       bottom: 20px;
@@ -77,69 +65,76 @@
     }
   </style>
 </head>
-
 <body>
   <h1>Heaven Validasi</h1>
   <div class="form-container">
-    <select id="bank-ewallet">
-      <option value="">Pilih Bank / E-Wallet</option>
+    <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
+    <select id="bank">
+      <option value="">Pilih Bank atau E-Wallet</option>
+
       <!-- E-Wallet -->
-      <option value="DANA">DANA (E-Wallet)</option>
-      <option value="OVO">OVO (E-Wallet)</option>
-      <option value="GOPAY">GoPay (E-Wallet)</option>
-      <option value="LINKAJA">LinkAja (E-Wallet)</option>
-      <option value="SHOPPEPAY">ShopeePay (E-Wallet)</option>
+      <option value="DANA">DANA</option>
+      <option value="OVO">OVO</option>
+      <option value="GOPAY">GOPAY</option>
+      <option value="LINKAJA">LINKAJA</option>
+      <option value="SHOPEEPAY">SHOPEEPAY</option>
+
       <!-- Bank -->
       <option value="014">BCA</option>
       <option value="008">Mandiri</option>
       <option value="009">BNI</option>
       <option value="002">BRI</option>
-      <!-- Tambah bank lain sesuai kebutuhan -->
+      <!-- Tambahkan bank lain sesuai kebutuhan -->
     </select>
-    <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
-    <button id="cekButton">Cek Sekarang</button>
+    <button onclick="cekRekening()">Cek Sekarang</button>
   </div>
   <div class="result" id="result"></div>
 
   <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    document.getElementById("cekButton").addEventListener("click", function () {
+    async function cekRekening() {
       const rekening = document.getElementById("rekening").value.trim();
-      const kode = document.getElementById("bank-ewallet").value;
+      const bank = document.getElementById("bank").value;
       const resultDiv = document.getElementById("result");
 
-      if (!kode) {
-        resultDiv.textContent = "Mohon pilih Bank atau E-Wallet.";
-        return;
-      }
-      if (!rekening) {
-        resultDiv.textContent = "Mohon isi Nomor Rekening atau Nomor E-Wallet.";
+      if (!rekening || !bank) {
+        resultDiv.textContent = "Silakan isi nomor rekening/ewallet dan pilih bank/ewallet.";
         return;
       }
 
-      resultDiv.textContent = "Memproses...";
+      resultDiv.textContent = "Sedang memeriksa...";
 
-      fetch(`/api/proxy?rekening=${encodeURIComponent(rekening)}&kode=${encodeURIComponent(kode)}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          if (data.success && data.data) {
-            resultDiv.innerHTML = `
-              <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik || "Tidak tersedia"}<br>
-              <strong>Bank:</strong> ${data.data.nama_bank || "Tidak tersedia"}<br>
-              <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || rekening}
-            `;
-          } else {
-            resultDiv.textContent = data.message || "Data tidak ditemukan.";
-          }
-        })
-        .catch((error) => {
-          console.error("Terjadi kesalahan:", error);
-          resultDiv.textContent = "Terjadi kesalahan saat memproses.";
-        });
-    });
+      try {
+        // Tentukan action sesuai apakah bank adalah e-wallet atau bank
+        const ewallets = ["DANA","OVO","GOPAY","LINKAJA","SHOPEEPAY"];
+        let apiUrl;
+
+        if (ewallets.includes(bank)) {
+          // Untuk e-wallet, action getEwallet (misal), jika API butuh beda action, sesuaikan ya
+          apiUrl = `/api/proxy?action=getEwallet&kode_bank=${bank}&nomor_rekening=${rekening}`;
+        } else {
+          // Untuk bank, action getAccount
+          apiUrl = `/api/proxy?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}`;
+        }
+
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          resultDiv.innerHTML = `
+            <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik || data.data.nama || "Tidak tersedia"}<br>
+            <strong>Bank:</strong> ${data.data.nama_bank || data.data.bank || "Tidak tersedia"}<br>
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || data.data.nomor_rekening || rekening}
+          `;
+        } else {
+          resultDiv.textContent = data.message || "Data tidak ditemukan.";
+        }
+      } catch (err) {
+        console.error(err);
+        resultDiv.textContent = "Terjadi kesalahan saat memproses.";
+      }
+    }
   </script>
 </body>
-
 </html>

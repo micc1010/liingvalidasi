@@ -1,52 +1,40 @@
 export default async function handler(req, res) {
-  const { rekening, kode } = req.query;
-  const APIKEY = process.env.APIKEY;
-
-  if (!kode) {
-    return res.status(400).json({
-      success: false,
-      message: "Parameter kode (bank atau ewallet) harus diisi",
-    });
-  }
-
   try {
-    // Tentukan apakah kode adalah e-wallet atau bank
-    // Misal kode e-wallet biasanya huruf semua (bisa buat list validasi)
-    const ewalletList = ["DANA", "OVO", "GOPAY", "LINKAJA", "SHOPPEPAY"];
+    const { action, kode_bank, nomor_rekening } = req.query;
+    const API_KEY = process.env.APIKEY;
 
-    if (rekening && !rekening.trim() && !ewalletList.includes(kode.toUpperCase())) {
-      return res.status(400).json({
-        success: false,
-        message: "Nomor rekening harus diisi",
-      });
+    if (!action) {
+      return res.status(400).json({ error: "Parameter action wajib diisi." });
     }
 
-    let url = new URL("https://apidev.biz.id/api/checker");
+    // Cek parameter wajib
+    if (!kode_bank) {
+      return res.status(400).json({ error: "Parameter kode_bank wajib diisi." });
+    }
 
-    if (ewalletList.includes(kode.toUpperCase())) {
-      // Jika e-wallet, misal pakai action getAccount (sesuaikan dokumentasi)
-      url.searchParams.append("action", "getAccount");
-      url.searchParams.append("apikey", APIKEY);
-      url.searchParams.append("kode_bank", kode.toUpperCase());
-      url.searchParams.append("nomor_rekening", rekening);
+    if (!nomor_rekening) {
+      return res.status(400).json({ error: "Parameter nomor_rekening wajib diisi." });
+    }
+
+    let apiUrl = "";
+
+    if (action === "getAccount") {
+      // Untuk cek rekening bank
+      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
+    } else if (action === "getEwallet") {
+      // Jika API untuk ewallet beda endpoint, ganti di sini, contoh di bawah
+      // Misal ewallet juga pakai getAccount tapi hanya beda kode_bank-nya
+      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
     } else {
-      // Bank biasa
-      url.searchParams.append("action", "getAccount");
-      url.searchParams.append("apikey", APIKEY);
-      url.searchParams.append("kode_bank", kode);
-      url.searchParams.append("nomor_rekening", rekening);
+      return res.status(400).json({ error: "Action tidak ditemukan" });
     }
 
-    const response = await fetch(url.toString());
+    const response = await fetch(apiUrl);
     const data = await response.json();
 
     res.status(200).json(data);
-
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Terjadi kesalahan pada server proxy",
-      error: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
