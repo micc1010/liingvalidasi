@@ -96,10 +96,10 @@
   <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    document.getElementById("cekButton").addEventListener("click", async function () {
+    document.querySelector("button").addEventListener("click", async function () {
       const rekening = document.getElementById("rekening").value;
       const bank = document.getElementById("bank").value;
-     const resultDiv = document.getElementById("result");
+      const resultDiv = document.getElementById("result");
 
       if (!rekening || !bank) {
         resultDiv.textContent = "Silakan isi nomor rekening dan pilih bank.";
@@ -111,12 +111,12 @@
       try {
         const response = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
         const data = await response.json();
-        console.log("RESPONS API:", data); // Ini penting
+        console.log("RESPONS API:", data);
 
-        if (data.success && data.data && data.data.nama) {
+        if (data.success && data.data && data.data.nama_pemilik) {
           resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${data.data.nama}<br>
-            <strong>Bank:</strong> ${data.data.bank}<br>
+            <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik}<br>
+            <strong>Bank:</strong> ${data.data.nama_bank}<br>
             <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening}
           `;
         } else {
