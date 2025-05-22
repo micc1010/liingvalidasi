@@ -96,10 +96,10 @@
   <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    document.getElementById("cekButton").addEventListener("click", function () {
+    document.getElementById("cekButton").addEventListener("click", async function () {
       const rekening = document.getElementById("rekening").value;
       const bank = document.getElementById("bank").value;
-      const resultDiv = document.getElementById("result");
+     const resultDiv = document.getElementById("result");
 
       if (!rekening || !bank) {
         resultDiv.textContent = "Silakan isi nomor rekening dan pilih bank.";
@@ -108,25 +108,27 @@
 
       resultDiv.textContent = "Sedang memproses...";
 
-      fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data); // Debugging di console browser
+      try {
+        const response = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
+        const data = await response.json();
+        console.log("RESPONS API:", data); // Ini penting
 
-          if (data.success && data.data) {
-            resultDiv.innerHTML = `
-              <strong>Nama Pemilik:</strong> ${data.data.nama || "Tidak tersedia"}<br>
-              <strong>Bank:</strong> ${data.data.bank || "Tidak tersedia"}<br>
-              <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || "Tidak tersedia"}
-            `;
-          } else {
-            resultDiv.textContent = data.message || "Data tidak ditemukan.";
-          }
-        })
-        .catch((error) => {
-          console.error("Terjadi kesalahan:", error);
-          resultDiv.textContent = "Terjadi kesalahan saat memproses.";
-        });
+        if (data.success && data.data && data.data.nama) {
+          resultDiv.innerHTML = `
+            <strong>Nama Pemilik:</strong> ${data.data.nama}<br>
+            <strong>Bank:</strong> ${data.data.bank}<br>
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening}
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <strong>Data tidak ditemukan.</strong><br>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        resultDiv.textContent = "Terjadi kesalahan saat memproses.";
+      }
     });
   </script>
 </body>
