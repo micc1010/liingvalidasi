@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   try {
     // Tentukan apakah kode adalah e-wallet atau bank
     // Misal kode e-wallet biasanya huruf semua (bisa buat list validasi)
-    const ewalletList = ["DANA", "OVO", "GOPAY", "LINKAJA", "SAKUKU"];
+    const ewalletList = ["DANA", "OVO", "GOPAY", "LINKAJA", "SHOPPEPAY"];
 
     if (rekening && !rekening.trim() && !ewalletList.includes(kode.toUpperCase())) {
       return res.status(400).json({
