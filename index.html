@@ -82,13 +82,20 @@
   <div class="form-container">
     <input type="text" id="rekening" placeholder="Nomor Rekening" />
     <select id="bank">
-      <option value="">Pilih Bank</option>
+      <option value="">Pilih Bank / E-Wallet</option>
+      <!-- Bank -->
       <option value="014">BCA</option>
       <option value="008">Mandiri</option>
       <option value="009">BNI</option>
       <option value="002">BRI</option>
-      <!-- Tambahkan kode bank lainnya jika perlu -->
+      <!-- E-Wallet -->
+      <option value="DANA">DANA</option>
+      <option value="OVO">OVO</option>
+      <option value="GOPAY">GoPay</option>
+      <option value="LINKAJA">LinkAja</option>
+      <option value="SAKUKU">Sakuku</option>
     </select>
+
     <button id="cekButton">Cek Sekarang</button>
   </div>
   <div class="result" id="result"></div>
