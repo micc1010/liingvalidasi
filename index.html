@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Heaven Validasi</title>
   <style>
     body {
@@ -90,14 +89,14 @@
       <option value="002">BRI</option>
       <!-- Tambahkan kode bank lainnya jika perlu -->
     </select>
-    <button onclick="cekRekening()">Cek Sekarang</button>
+    <button id="cekButton">Cek Sekarang</button>
   </div>
   <div class="result" id="result"></div>
 
   <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    async function cekRekening() {
+    document.getElementById("cekButton").addEventListener("click", function () {
       const rekening = document.getElementById("rekening").value;
       const bank = document.getElementById("bank").value;
       const resultDiv = document.getElementById("result");
@@ -107,26 +106,28 @@
         return;
       }
 
-      resultDiv.textContent = "Sedang memeriksa...";
+      resultDiv.textContent = "Sedang memproses...";
 
-      try {
-        const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
-        const data = await res.json();
+      fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data); // Debugging di console browser
 
-        if (data.success) {
-          resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${data.data.nama || "Tidak tersedia"}<br>
-            <strong>Bank:</strong> ${data.data.bank || "Tidak tersedia"}<br>
-            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || "Tidak tersedia"}
-          `;
-        } else {
-          resultDiv.textContent = data.message || "Data tidak ditemukan.";
-        }
-      } catch (err) {
-        resultDiv.textContent = "Terjadi kesalahan saat memproses.";
-      }
-    }
+          if (data.success && data.data) {
+            resultDiv.innerHTML = `
+              <strong>Nama Pemilik:</strong> ${data.data.nama || "Tidak tersedia"}<br>
+              <strong>Bank:</strong> ${data.data.bank || "Tidak tersedia"}<br>
+              <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || "Tidak tersedia"}
+            `;
+          } else {
+            resultDiv.textContent = data.message || "Data tidak ditemukan.";
+          }
+        })
+        .catch((error) => {
+          console.error("Terjadi kesalahan:", error);
+          resultDiv.textContent = "Terjadi kesalahan saat memproses.";
+        });
+    });
   </script>
 </body>
-
 </html>
