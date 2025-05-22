@@ -115,9 +115,9 @@
 
         if (data.success) {
           resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${data.data.nama}<br>
-            <strong>Bank:</strong> ${data.data.bank}<br>
-            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening}
+            <strong>Nama Pemilik:</strong> ${data.data.nama || "Tidak tersedia"}<br>
+            <strong>Bank:</strong> ${data.data.bank || "Tidak tersedia"}<br>
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || "Tidak tersedia"}
           `;
         } else {
           resultDiv.textContent = data.message || "Data tidak ditemukan.";
