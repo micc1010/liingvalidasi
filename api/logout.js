@@ -1,13 +1,13 @@
 import { getSessions, clearSession } from "./sessionStore";
 
 export default function handler(req, res) {
-  if (req.method === "POST") {
-    const cookies = req.headers.cookie || "";
-    const token = cookies
-      .split("; ")
-      .find(row => row.startsWith("token="))
-      ?.split("=")[1];
+  const cookies = req.headers.cookie || "";
+  const token = cookies
+    .split("; ")
+    .find(row => row.startsWith("token="))
+    ?.split("=")[1];
 
+  if (token) {
     const sessions = getSessions();
     for (const [username, sessionToken] of Object.entries(sessions)) {
       if (sessionToken === token) {
@@ -15,11 +15,8 @@ export default function handler(req, res) {
         break;
       }
     }
-
-    res.setHeader("Set-Cookie", `token=deleted; Path=/; Max-Age=0`);
-    return res.status(200).json({ success: true });
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
+
+  res.setHeader("Set-Cookie", "token=; Path=/; HttpOnly; Max-Age=0");
+  res.status(200).json({ success: true });
 }
