@@ -1,44 +1,132 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Validasi Rekening - Liing</title>
-  <link rel="icon" href="/logo/logo.webp" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heaven Validasi</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+    }
+
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 90%;
+      max-width: 500px;
+      background-color: #111;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    input,
+    select,
+    button {
+      font-size: 1.2rem;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    input,
+    select {
+      background-color: #222;
+      color: white;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 30px;
+      font-size: 1.1rem;
+      word-break: break-word;
+      text-align: center;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Cek Validasi Rekening</h1>
-  <div id="login-check"></div>
+  <h1>Heaven Validasi</h1>
+  <div class="form-container">
+    <input type="text" id="rekening" placeholder="Nomor Rekening" />
+    <select id="bank">
+      <option value="">Pilih Bank</option>
+      <option value="002">BCA</option>
+      <option value="008">MANDIRI</option>
+      <option value="009">BNI</option>
+      <option value="011">BRI</option>
+      <!-- Tambahkan kode bank lain sesuai kebutuhan -->
+    </select>
+    <button onclick="cekRekening()">Cek Sekarang</button>
+  </div>
+  <div class="result" id="result"></div>
 
-  <form id="cekForm" style="display:none;">
-    <input type="text" id="rekening" placeholder="Nomor Rekening" required />
-    <input type="text" id="bank" placeholder="Kode Bank (misal: bca)" required />
-    <button type="submit">Cek</button>
-  </form>
-
-  <pre id="result"></pre>
+  <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    const user = localStorage.getItem("user");
-    if (!user) {
-      document.getElementById('login-check').innerHTML = '<p>Silakan <a href="login.html">login</a> terlebih dahulu.</p>';
-    } else {
-      document.getElementById('login-check').innerHTML = `<p>Login sebagai <b>${user}</b> | <a href="#" onclick="logout()">Logout</a></p>`;
-      document.getElementById('cekForm').style.display = 'block';
-    }
+    async function cekRekening() {
+      const rekening = document.getElementById("rekening").value;
+      const bank = document.getElementById("bank").value;
+      const resultDiv = document.getElementById("result");
 
-    function logout() {
-      localStorage.removeItem("user");
-      location.reload();
-    }
+      if (!rekening || !bank) {
+        resultDiv.textContent = "Silakan isi nomor rekening dan pilih bank.";
+        return;
+      }
 
-    document.getElementById('cekForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const rekening = document.getElementById('rekening').value;
-      const bank = document.getElementById('bank').value;
-      const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
-      const data = await res.json();
-      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-    };
+      resultDiv.textContent = "Sedang memeriksa...";
+
+      try {
+        const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
+        const data = await res.json();
+
+        if (data.success) {
+          resultDiv.innerHTML = `
+            <strong>Nama Pemilik:</strong> ${data.data.nama}<br>
+            <strong>Bank:</strong> ${data.data.bank}<br>
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening}
+          `;
+        } else {
+          resultDiv.textContent = data.message || "Data tidak ditemukan.";
+        }
+      } catch (err) {
+        resultDiv.textContent = "Terjadi kesalahan saat memproses.";
+      }
+    }
   </script>
 </body>
+
 </html>
