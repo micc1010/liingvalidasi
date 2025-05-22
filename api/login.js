@@ -1,4 +1,9 @@
-import { setSession } from "./sessionStore";
+import {
+  createSession,
+  getSession,
+  destroySession,
+  isSessionValid
+} from './sessionStore.js';
 import { nanoid } from "nanoid";
 
 const users = [

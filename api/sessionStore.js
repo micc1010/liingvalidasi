@@ -1,4 +1,3 @@
-// api/sessionStore.js
 const sessions = new Map();
 
 export function createSession(username, sessionId) {
