@@ -58,26 +58,35 @@
       text-align: center;
     }
     footer {
-      margin-top: 20px;
+      position: absolute;
+      bottom: 20px;
       font-size: 0.9rem;
       color: #777;
     }
-    .logout-btn {
-      margin-top: 15px;
+    .logout-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
       background-color: #dc3545;
     }
   </style>
 </head>
 <body>
+  <!-- Script pengecekan login -->
   <script>
     fetch("/api/check-auth")
-      .then(res => {
-        if (!res.ok) window.location.href = "/login.html";
+      .then((res) => {
+        if (!res.ok) {
+          window.location.href = "/login.html";
+        }
       })
-      .catch(() => window.location.href = "/login.html");
+      .catch(() => {
+        window.location.href = "/login.html";
+      });
   </script>
 
   <h1>Heaven Validasi</h1>
+  <button onclick="logout()" class="logout-button">Logout</button>
 
   <div class="form-container">
     <input type="text" id="rekening" placeholder="Nomor Rekening / Nomor E-Wallet" />
@@ -114,10 +123,8 @@
       <option value="009">BNI</option>
       <option value="002">BRI</option>
       <option value="451">BSI</option>
-      <!-- Tambahkan bank lain sesuai kebutuhan -->
     </select>
     <button onclick="cekRekening()">Cek Sekarang</button>
-    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
   <div class="result" id="result"></div>
@@ -139,9 +146,15 @@
 
       try {
         const ewallets = ["DANA", "OVO", "GOPAY", "LINKAJA", "SHOPEEPAY"];
-        let action = ewallets.includes(bank) ? "getEwallet" : "getAccount";
+        let apiUrl;
 
-        const res = await fetch(`/api/proxy?action=${action}&kode_bank=${bank}&nomor_rekening=${rekening}`);
+        if (ewallets.includes(bank)) {
+          apiUrl = `/api/proxy?action=getEwallet&kode_bank=${bank}&nomor_rekening=${rekening}`;
+        } else {
+          apiUrl = `/api/proxy?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}`;
+        }
+
+        const res = await fetch(apiUrl);
         const data = await res.json();
 
         if (data.success && data.data) {
