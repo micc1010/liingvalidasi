@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Heaven Validasi</title>
   <style>
     body {
@@ -80,63 +81,66 @@
 <body>
   <h1>Heaven Validasi</h1>
   <div class="form-container">
-    <input type="text" id="rekening" placeholder="Nomor Rekening" />
+    <input type="text" id="rekening" placeholder="Nomor Rekening atau Nomor HP E-Wallet" />
     <select id="bank">
-      <option value="">Pilih Bank / E-Wallet</option>
-      <!-- Bank -->
-      <option value="014">BCA</option>
-      <option value="008">Mandiri</option>
-      <option value="009">BNI</option>
-      <option value="002">BRI</option>
+      <option value="">Pilih Jenis (E-Wallet/Bank)</option>
       <!-- E-Wallet -->
       <option value="DANA">DANA</option>
       <option value="OVO">OVO</option>
       <option value="GOPAY">GoPay</option>
       <option value="LINKAJA">LinkAja</option>
       <option value="SAKUKU">Sakuku</option>
+      <option disabled>──────────</option>
+      <!-- Bank -->
+      <option value="014">BCA</option>
+      <option value="008">Mandiri</option>
+      <option value="009">BNI</option>
+      <option value="002">BRI</option>
     </select>
-
-    <button id="cekButton">Cek Sekarang</button>
+    <button onclick="cekRekening()">Cek Sekarang</button>
   </div>
   <div class="result" id="result"></div>
 
   <footer>© 2025 Heaven Validasi</footer>
 
   <script>
-    document.querySelector("button").addEventListener("click", async function () {
-      const rekening = document.getElementById("rekening").value;
+    async function cekRekening() {
+      const rekening = document.getElementById("rekening").value.trim();
       const bank = document.getElementById("bank").value;
       const resultDiv = document.getElementById("result");
 
       if (!rekening || !bank) {
-        resultDiv.textContent = "Silakan isi nomor rekening dan pilih bank.";
+        resultDiv.textContent = "Silakan isi nomor dan pilih bank atau e-wallet.";
         return;
       }
 
-      resultDiv.textContent = "Sedang memproses...";
+      resultDiv.textContent = "Sedang memeriksa...";
 
       try {
-        const response = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
-        const data = await response.json();
-        console.log("RESPONS API:", data);
+        const res = await fetch(`/api/proxy?rekening=${rekening}&bank=${bank}`);
+        const data = await res.json();
 
-        if (data.success && data.data && data.data.nama_pemilik) {
+        console.log(data); // Debug
+
+        if (data.success && data.data) {
+          const nama = data.data.nama || data.data.nama_pemilik || "Tidak tersedia";
+          const instansi = data.data.bank || data.data.nama_bank || bank;
+          const nomor = data.data.nomor_rekening || rekening;
+
           resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik}<br>
-            <strong>Bank:</strong> ${data.data.nama_bank}<br>
-            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening}
+            <strong>Nama Pemilik:</strong> ${nama}<br>
+            <strong>Bank / E-Wallet:</strong> ${instansi}<br>
+            <strong>Nomor:</strong> ${nomor}
           `;
         } else {
-          resultDiv.innerHTML = `
-            <strong>Data tidak ditemukan.</strong><br>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-          `;
+          resultDiv.textContent = data.message || "Data tidak ditemukan.";
         }
-      } catch (error) {
-        console.error("Terjadi kesalahan:", error);
+      } catch (err) {
+        console.error("Error:", err);
         resultDiv.textContent = "Terjadi kesalahan saat memproses.";
       }
-    });
+    }
   </script>
 </body>
+
 </html>

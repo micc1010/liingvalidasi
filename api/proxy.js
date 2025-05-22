@@ -1,40 +1,44 @@
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
   const { rekening, bank } = req.query;
-  const apiKey = process.env.APIKEY;
 
   if (!rekening || !bank) {
-    return res.status(400).json({ error: "rekening dan bank harus diisi" });
+    return res.status(400).json({ success: false, message: "Parameter rekening dan bank wajib diisi." });
   }
 
-  const isEwallet = ["DANA", "OVO", "GOPAY", "LINKAJA", "SAKUKU"].includes(bank.toUpperCase());
+  // Daftar e-wallet yang didukung
+  const ewallets = ["DANA", "OVO", "GOPAY", "LINKAJA", "SAKUKU"];
 
-  const url = `https://apidev.biz.id/api/checker?action=getAccount` +
-    `&${isEwallet ? "ewallet" : "kode_bank"}=${bank}` +
-    `&nomor_rekening=${rekening}&apikey=${apiKey}`;
+  // Base URL API
+  const baseUrl = "https://apidev.biz.id/api/checker";
+
+  let url = "";
+  let apikey = process.env.APIKEY; // pastikan APIKEY sudah di set di environment variable
+
+  if (ewallets.includes(bank.toUpperCase())) {
+    // Jika bank termasuk e-wallet
+    // API e-wallet biasanya tidak butuh kode_bank, hanya nomor dan provider
+    // Sesuaikan parameter API-nya sesuai dokumentasi e-wallet, contoh:
+    url = `${baseUrl}?action=ewallet&provider=${bank.toLowerCase()}&nomor_hp=${rekening}&apikey=${apikey}`;
+  } else {
+    // Untuk bank biasa, wajib kode_bank dan nomor_rekening
+    url = `${baseUrl}?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}&apikey=${apikey}`;
+  }
 
   try {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!data.success) {
-      return res.status(500).json({ error: "API error", message: data.message });
+    // Sukses, kirim data dari API langsung
+    if (data.success) {
+      res.status(200).json(data);
+    } else {
+      // Jika error dari API, teruskan pesan error
+      res.status(400).json({ success: false, message: data.message || "API error", error: data.error || {} });
     }
-
-    const result = isEwallet
-      ? {
-          nama: data.data.nama_pemilik || "Tidak tersedia",
-          bank: data.data.nama_ewallet || bank,
-          nomor_rekening: data.data.nomor_hp || rekening
-        }
-      : {
-          nama: data.data.nama_pemilik || "Tidak tersedia",
-          bank: data.data.nama_bank || bank,
-          nomor_rekening: data.data.nomor_rekening || rekening
-        };
-
-    res.status(200).json({ success: true, data: result });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Fetch API error:", error);
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 }
