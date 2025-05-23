@@ -1,21 +1,11 @@
 // /api/check-auth.js
-import { isSessionValid } from "./sessionStore.js";
-
 export default function handler(req, res) {
   const cookies = req.headers.cookie || "";
-  const tokenMatch    = cookies.match(/token=([^;]+)/);
-  const usernameMatch = cookies.match(/username=([^;]+)/);
+  const isAuthenticated = cookies.includes("token=authenticated");
 
-  if (!tokenMatch || !usernameMatch) {
-    return res.status(401).json({ authenticated: false });
-  }
-
-  const token    = tokenMatch[1];
-  const username = usernameMatch[1];
-
-  if (isSessionValid(username, token)) {
-    return res.status(200).json({ authenticated: true });
+  if (isAuthenticated) {
+    res.status(200).json({ authenticated: true });
   } else {
-    return res.status(401).json({ authenticated: false });
+    res.status(401).json({ authenticated: false });
   }
 }
