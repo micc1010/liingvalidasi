@@ -1,18 +1,33 @@
-export default function handler(req, res) {
-  if (req.method === 'POST') {
-    const { username, password } = req.body;
+import { createSession } from "./sessionStore.js";
 
-    const USERNAME = process.env.LOGIN_USERNAME;
-    const PASSWORD = process.env.LOGIN_PASSWORD;
+const USERS = {
+  dimasyorke: "asd123123",
+  michael: "micc1010",
+};
 
-    if (username === USERNAME && password === PASSWORD) {
-      res.setHeader('Set-Cookie', `token=authenticated; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure`);
-      return res.status(200).json({ success: true });
-    } else {
-      return res.status(401).json({ success: false, message: 'Username atau password salah' });
-    }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).end();
   }
+
+  const buffers = [];
+  for await (const chunk of req) {
+    buffers.push(chunk);
+  }
+  const body = JSON.parse(Buffer.concat(buffers).toString());
+  const { username, password } = body;
+
+  const validPassword = USERS[username];
+  if (!validPassword || password !== validPassword) {
+    return res.status(401).json({ success: false, message: "Username atau password salah" });
+  }
+
+  const sessionId = createSession(username);
+
+  res.setHeader("Set-Cookie", [
+    `username=${username}; Path=/; HttpOnly; SameSite=Strict`,
+    `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Strict`
+  ]);
+
+  return res.status(200).json({ success: true });
 }
