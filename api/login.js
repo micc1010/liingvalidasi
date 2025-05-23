@@ -24,10 +24,14 @@ export default async function handler(req, res) {
 
   const sessionId = createSession(username);
 
+  console.log("Login attempt:", { username, password });
+  console.log("Token created:", token);
   res.setHeader("Set-Cookie", [
-    `username=${username}; Path=/; HttpOnly; SameSite=Strict`,
-    `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Strict`
+    `username=${username}; Path=/; SameSite=Strict`,
+    `sessionId=${token}; Path=/; SameSite=Strict`
   ]);
-
-  return res.status(200).json({ success: true });
+  console.log("Set-Cookie header sent:", [
+    `username=${username}; Path=/; SameSite=Strict`,
+    `sessionId=${token}; Path=/; SameSite=Strict`
+  ]);
 }

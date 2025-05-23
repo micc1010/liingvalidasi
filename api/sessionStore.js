@@ -2,19 +2,20 @@
 const sessionMap = new Map();
 
 export function createSession(username) {
-  const sessionId = `${username}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  sessionMap.set(username, sessionId);
+  const sessionId = generateRandomToken();
+  sessionMap[username] = sessionId;
+  console.log("Session created for", username, ":", sessionId);
   return sessionId;
 }
 
-export function getSession(username) {
-  return sessionMap.get(username);
-}
-
 export function isValidSession(username, sessionId) {
-  return sessionMap.get(username) === sessionId;
+  const valid = sessionMap[username] === sessionId;
+  console.log(`Validating session for ${username}:`, valid);
+  return valid;
 }
 
 export function removeSession(username) {
-  sessionMap.delete(username);
+  console.log("Session removed for", username);
+  delete sessionMap[username];
 }
+
