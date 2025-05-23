@@ -1,3 +1,4 @@
+// /api/login.js
 import { createSession } from "./sessionStore.js";
 
 const USERS = {
@@ -5,33 +6,26 @@ const USERS = {
   michael: "micc1010",
 };
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).end();
+    res.setHeader("Allow", ["POST"]);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const buffers = [];
-  for await (const chunk of req) {
-    buffers.push(chunk);
-  }
-  const body = JSON.parse(Buffer.concat(buffers).toString());
-  const { username, password } = body;
-
+  const { username, password } = req.body;
   const validPassword = USERS[username];
+
   if (!validPassword || password !== validPassword) {
     return res.status(401).json({ success: false, message: "Username atau password salah" });
   }
 
   const sessionId = createSession(username);
 
-  console.log("Login attempt:", { username, password });
-  console.log("Token created:", token);
-  res.setHeader("Set-Cookie", [
-    `username=${username}; Path=/; SameSite=Strict`,
-    `sessionId=${token}; Path=/; SameSite=Strict`
+  // Gabungkan semua cookie dalam satu header
+  res.setHeader('Set-Cookie', [
+    `username=${username}; Path=/; Max-Age=3600; SameSite=Strict`,
+    `sessionId=${sessionId}; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict`
   ]);
-  console.log("Set-Cookie header sent:", [
-    `username=${username}; Path=/; SameSite=Strict`,
-    `sessionId=${token}; Path=/; SameSite=Strict`
-  ]);
+
+  return res.status(200).json({ success: true });
 }
