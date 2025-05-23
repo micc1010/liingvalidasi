@@ -1,38 +1,34 @@
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
-  const cookies = req.headers.cookie || "";
-  if (!cookies.includes("token=authenticated")) {
-    return res.status(403).json({ success: false, message: "Akses ditolak. Silakan login." });
+  if (req.method !== "GET") {
+    return res.status(405).json({ success: false, message: "Method not allowed" });
   }
 
   const { action, kode_bank, nomor_rekening } = req.query;
-  const API_KEY = process.env.APIKEY;
+  const apikey = process.env.APIKEY;  // Ambil dari env variable
 
-  if (!action) return res.status(400).json({ success: false, message: "Parameter action wajib diisi." });
-  if (!nomor_rekening) return res.status(400).json({ success: false, message: "Parameter nomor_rekening wajib diisi." });
+  if (!apikey) {
+    return res.status(500).json({ success: false, message: "API key belum diset di environment variables." });
+  }
 
-  let apiUrl = "";
+  if (!action || !kode_bank || !nomor_rekening) {
+    return res.status(400).json({ success: false, message: "Parameter kurang lengkap" });
+  }
+
+  if (action !== "getAccount") {
+    return res.status(400).json({ success: false, message: "Action tidak dikenal atau tidak didukung oleh API" });
+  }
 
   try {
-    if (action === "getAccount") {
-      if (!kode_bank) return res.status(400).json({ success: false, message: "Parameter kode_bank wajib diisi." });
+    const apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${encodeURIComponent(kode_bank)}&nomor_rekening=${encodeURIComponent(nomor_rekening)}&apikey=${apikey}`;
 
-      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
-    } else if (action === "getEwallet") {
-      if (!kode_bank) return res.status(400).json({ success: false, message: "Parameter tipe wajib diisi." });
-
-      apiUrl = `https://apidev.biz.id/api/checker?action=getEwallet&tipe=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
-    } else if (action === "getBankList") {
-      apiUrl = `https://apidev.biz.id/api/checker?action=getBankList&apikey=${API_KEY}`;
-    } else {
-      return res.status(400).json({ success: false, message: "Action tidak dikenali." });
-    }
-
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+    const apiRes = await fetch(apiUrl);
+    const data = await apiRes.json();
 
     return res.status(200).json(data);
   } catch (error) {
-    console.error("Gagal mengambil data:", error);
-    return res.status(500).json({ success: false, message: "Gagal mengambil data dari server eksternal." });
+    console.error("Proxy error:", error);
+    return res.status(500).json({ success: false, message: "Terjadi kesalahan pada server proxy." });
   }
 }

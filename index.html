@@ -93,13 +93,17 @@
   </style>
 </head>
 <body>
-  <!-- Cek login -->
+  <!-- Script pengecekan login -->
   <script>
     fetch("/api/check-auth")
-      .then(res => {
-        if (!res.ok) window.location.href = "/login.html";
+      .then((res) => {
+        if (!res.ok) {
+          window.location.href = "/login.html";
+        }
       })
-      .catch(() => window.location.href = "/login.html");
+      .catch(() => {
+        window.location.href = "/login.html";
+      });
   </script>
 
   <div class="logo-container">
@@ -159,36 +163,30 @@
       const resultDiv = document.getElementById("result");
 
       if (!rekening || !bank) {
-        resultDiv.textContent = "Silakan isi nomor dan pilih bank/ewallet.";
+        resultDiv.textContent = "Silakan isi nomor rekening/ewallet dan pilih bank/ewallet.";
         return;
       }
 
       resultDiv.textContent = "Sedang memeriksa...";
 
-      const ewallets = ["DANA", "OVO", "GOPAY", "LINKAJA", "SHOPEEPAY"];
-      const action = ewallets.includes(bank) ? "getEwallet" : "getAccount";
-      const paramName = ewallets.includes(bank) ? "kode_bank" : "kode_bank";
-      const apiUrl = `/api/proxy?action=${action}&${paramName}=${bank}&nomor_rekening=${rekening}`;
-
       try {
+        // API selalu pakai action=getAccount untuk bank dan e-wallet
+        const apiUrl = `/api/proxy?action=getAccount&kode_bank=${bank}&nomor_rekening=${rekening}`;
+
         const res = await fetch(apiUrl);
         const data = await res.json();
 
         if (data.success && data.data) {
-          const nama = data.data.nama || data.data.nama_pemilik || "Tidak tersedia";
-          const bankNama = data.data.bank || data.data.nama_bank || bank;
-          const norek = data.data.nomor_rekening || rekening;
-
           resultDiv.innerHTML = `
-            <strong>Nama Pemilik:</strong> ${nama}<br>
-            <strong>Bank/E-Wallet:</strong> ${bankNama}<br>
-            <strong>Nomor:</strong> ${norek}
+            <strong>Nama Pemilik:</strong> ${data.data.nama_pemilik || data.data.nama || "Tidak tersedia"}<br>
+            <strong>Bank:</strong> ${data.data.nama_bank || data.data.bank || "Tidak tersedia"}<br>
+            <strong>Nomor Rekening:</strong> ${data.data.nomor_rekening || rekening}
           `;
         } else {
           resultDiv.textContent = data.message || "Data tidak ditemukan.";
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         resultDiv.textContent = "Terjadi kesalahan saat memproses.";
       }
     }
