@@ -22,6 +22,10 @@ export default function handler(req, res) {
   const token = createSession(username);
   const cookieValue = `token=${token}; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure; username=${username}`;
 
-  res.setHeader("Set-Cookie", cookieValue);
+  res.setHeader(
+    'Set-Cookie',
+    `token=authenticated; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict` // ← HAPUS "Secure"
+  );
+
   return res.status(200).json({ success: true });
 }

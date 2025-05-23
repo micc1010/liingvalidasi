@@ -74,7 +74,7 @@
 <body>
   <!-- Script pengecekan login -->
   <script>
-    fetch("/api/check-auth")
+    fetch("/api/check-auth", { credentials: "include" })
       .then((res) => {
         if (!res.ok) {
           window.location.href = "/login.html";
