@@ -24,8 +24,10 @@ export default async function handler(req, res) {
 
     let apiUrl = "";
 
-    if (action === "getAccount" || action === "getEwallet") {
-      apiUrl = `https://apidev.biz.id/api/checker?action=${action}&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
+    if (action === "getAccount") {
+      apiUrl = `https://apidev.biz.id/api/checker?action=getAccount&kode_bank=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
+    } else if (action === "getEwallet") {
+      apiUrl = `https://apidev.biz.id/api/checker?action=getEwallet&tipe=${kode_bank}&nomor_rekening=${nomor_rekening}&apikey=${API_KEY}`;
     } else {
       return res.status(400).json({ error: "Action tidak ditemukan" });
     }
