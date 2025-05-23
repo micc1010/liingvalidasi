@@ -9,13 +9,13 @@ export default function handler(req, res) {
 
   const cookies = req.headers.cookie || "";
   const usernameMatch = cookies.match(/username=([^;]+)/);
-  if (usernameMatch) {
-    invalidateSession(usernameMatch[1]);
-  }
+  if (usernameMatch) invalidateSession(usernameMatch[1]);
 
+  // Hapus cookie
   res.setHeader("Set-Cookie", [
-    "token=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict; Secure",
-    "username=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict; Secure"
+    "token=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict",
+    "username=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict"
   ]);
+
   return res.status(200).json({ success: true, message: "Logout berhasil" });
 }

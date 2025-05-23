@@ -1,5 +1,7 @@
 // /api/sessionStore.js
-const sessions = new Map(); // username -> token
+import crypto from 'crypto';
+
+const sessions = new Map(); // username → token
 
 export function createSession(username) {
   const token = crypto.randomUUID();

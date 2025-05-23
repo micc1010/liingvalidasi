@@ -1,31 +1,22 @@
-// /api/login.js
-import { createSession } from "./sessionStore.js";
+// /api/sessionStore.js
+import crypto from 'crypto';
 
-const USERS = {
-  dimasyorke: "asd123123",
-  michael: "micc1010",
-};
+const sessions = new Map(); // username → token
 
-export default function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", ["POST"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+export function createSession(username) {
+  const token = crypto.randomUUID();
+  sessions.set(username, token);
+  return token;
+}
 
-  const { username, password } = req.body;
-  const validPassword = USERS[username];
+export function getSession(username) {
+  return sessions.get(username);
+}
 
-  if (!validPassword || password !== validPassword) {
-    return res.status(401).json({ success: false, message: "Username atau password salah" });
-  }
+export function isSessionValid(username, token) {
+  return sessions.get(username) === token;
+}
 
-  const token = createSession(username);
-  const cookieValue = `token=${token}; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure; username=${username}`;
-
-  res.setHeader(
-    'Set-Cookie',
-    `token=authenticated; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict` // ← HAPUS "Secure"
-  );
-
-  return res.status(200).json({ success: true });
+export function invalidateSession(username) {
+  sessions.delete(username);
 }
