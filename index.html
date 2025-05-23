@@ -74,16 +74,14 @@
 <body>
   <!-- Script pengecekan login -->
   <script>
-    fetch("/api/check-auth.js", {
-      method: "GET",
-      credentials: "include", // WAJIB!
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Auth check result:", data);
-        if (!data.authenticated) {
+    fetch("/api/check-auth")
+      .then((res) => {
+        if (!res.ok) {
           window.location.href = "/login.html";
         }
+      })
+      .catch(() => {
+        window.location.href = "/login.html";
       });
   </script>
 
