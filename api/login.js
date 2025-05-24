@@ -34,7 +34,7 @@ export default async function handler(req, res) {
   // Set cookie HttpOnly dengan JWT
   res.setHeader(
     "Set-Cookie",
-    `token=${token}; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict; Secure`
+    `token=${token}; Path=/; HttpOnly; Max-Age=3600; SameSite=Strict`
   );
 
   return res.status(200).json({ success: true });
